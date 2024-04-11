@@ -10,7 +10,7 @@ print(data.columns)
 # Access columns using the original names
 x = data['X_{ECI} (ft)']
 y = data['Y_{ECI} (ft)']
-z = data['Z_{ECI} (ft)']
+z = data['Altitude ASL (ft)']
 
 # Plot the flight path in 3D
 fig = plt.figure()
