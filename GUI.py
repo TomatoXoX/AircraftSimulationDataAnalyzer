@@ -37,15 +37,21 @@ def plot_data(data, file_path):
     # Plot 1: 3D Flight Path
     fig_flight_path = Figure(figsize=(9, 8), dpi=100)
     ax_flight_path = fig_flight_path.add_subplot(111, projection='3d')
-    x, y, z = data['X_{ECI} (ft)'], data['Y_{ECI} (ft)'], data['Altitude ASL (ft)']
-    ax_flight_path.plot(x, y, z, linewidth=1.5)
-    ax_flight_path.scatter(x.iloc[0], y.iloc[0], z.iloc[0], color='g', label='Start', s=50)
-    ax_flight_path.scatter(x.iloc[-1], y.iloc[-1], z.iloc[-1], color='r', label='End', s=50)
-    ax_flight_path.set_xlabel('X (ft)', fontsize=8)
-    ax_flight_path.set_ylabel('Y (ft)', fontsize=8)
-    ax_flight_path.set_zlabel('Z (ft)', fontsize=8)
+
+    # Convert coordinates from feet to meters
+    x_diff = data['X_{ECI} (ft)'].diff().fillna(0) * 0.3048
+    y_diff = data['Y_{ECI} (ft)'].diff().fillna(0) * 0.3048
+    z = data['Altitude ASL (ft)'] * 0.3048
+
+    ax_flight_path.plot(x_diff.cumsum(), y_diff.cumsum(), z, linewidth=1.5)
+    ax_flight_path.scatter(x_diff.cumsum().iloc[0], y_diff.cumsum().iloc[0], z.iloc[0], color='g', label='Start', s=50)
+    ax_flight_path.scatter(x_diff.cumsum().iloc[-1], y_diff.cumsum().iloc[-1], z.iloc[-1], color='r', label='End', s=50)
+    ax_flight_path.set_xlabel('X (m)', fontsize=8)
+    ax_flight_path.set_ylabel('Y (m)', fontsize=8)
+    ax_flight_path.set_zlabel('Z (m)', fontsize=8)
     ax_flight_path.set_title('Flight Path', fontsize=10)
     ax_flight_path.legend()
+
     canvas_flight_path = FigureCanvasTkAgg(fig_flight_path, master=flight_path_tab)
     canvas_flight_path.draw()
     canvas_flight_path.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -53,9 +59,9 @@ def plot_data(data, file_path):
     # Altitude vs. Time plot
     fig_altitude = Figure(figsize=(5, 4), dpi=100)
     ax_altitude = fig_altitude.add_subplot(111)
-    ax_altitude.plot(data['Time'], data['Altitude ASL (ft)'], linewidth=1.5)
+    ax_altitude.plot(data['Time'], data['Altitude ASL (ft)'] * 0.3048, linewidth=1.5)
     ax_altitude.set_xlabel('Time (s)', fontsize=8)
-    ax_altitude.set_ylabel('Altitude (ft)', fontsize=8)
+    ax_altitude.set_ylabel('Altitude (m)', fontsize=8)
     ax_altitude.set_title('Altitude vs. Time', fontsize=10)
     canvas_altitude = FigureCanvasTkAgg(fig_altitude, master=altitude_tab)
     canvas_altitude.draw()
@@ -64,21 +70,20 @@ def plot_data(data, file_path):
     # Velocity vs. Time plot
     fig_velocity = Figure(figsize=(5, 4), dpi=100)
     ax_velocity = fig_velocity.add_subplot(111)
-    ax_velocity.plot(data['Time'], data['V_{Total} (ft/s)'], linewidth=1.5)
+    ax_velocity.plot(data['Time'], data['V_{Total} (ft/s)'] * 0.3048, linewidth=1.5)
     ax_velocity.set_xlabel('Time (s)', fontsize=8)
-    ax_velocity.set_ylabel('Velocity (ft/s)', fontsize=8)
+    ax_velocity.set_ylabel('Velocity (m/s)', fontsize=8)
     ax_velocity.set_title('Velocity vs. Time', fontsize=10)
     canvas_velocity = FigureCanvasTkAgg(fig_velocity, master=velocity_tab)
     canvas_velocity.draw()
     canvas_velocity.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     # Pitch, Roll, Yaw vs. Time plot
-
     fig_attitude = Figure(figsize=(5, 6), dpi=100)
     ax_pitch = fig_attitude.add_subplot(311)
     ax_roll = fig_attitude.add_subplot(312)
     ax_yaw = fig_attitude.add_subplot(313)
-    ax_pitch.plot(data['Time'], data['Theta (deg)'], linewidth=1.5)
+    ax_pitch.plot(data['Time'], data['Theta(deg)'], linewidth=1.5)
     ax_roll.plot(data['Time'], data['Phi (deg)'], linewidth=1.5)
     ax_yaw.plot(data['Time'], data['Psi (deg)'], linewidth=1.5)
     for ax, label in zip([ax_pitch, ax_roll, ax_yaw], ['Pitch (deg)', 'Roll (deg)', 'Yaw (deg)']):
